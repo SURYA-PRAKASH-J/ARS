@@ -4,10 +4,14 @@ project(ARS)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# This tells CMake to use vcpkg packages
+# Force Static Runtime (MT instead of MD)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
+set(CURL_USE_STATIC_LIBS ON)
 find_package(CURL REQUIRED)
 
 add_executable(ARS ARS.cpp)
 
-# Link using vcpkg's target
+target_compile_definitions(ARS PRIVATE CURL_STATICLIB)
+
 target_link_libraries(ARS PRIVATE CURL::libcurl)

@@ -3,7 +3,8 @@ ARS Enhanced.
 Features:
     1. Execute remote commands.
     2. Persistant across reboots.
-    3. Need technical knowledge to uninstall.
+    3. Debugging capabilities.
+    4. Need technical knowledge to uninstall.
 
 # Available Commmands:
     say
