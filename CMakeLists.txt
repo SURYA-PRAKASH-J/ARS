@@ -20,7 +20,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(VCPKG_TARGET_TRIPLET "x64-windows-static")
 
 set(CURL_USE_STATIC_LIBS ON)
-find_package(CURL REQUIRED)
+find_package(CURL CONFIG REQUIRED)
 
 add_executable(ARS ARS.cpp)
 
